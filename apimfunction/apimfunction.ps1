@@ -63,7 +63,7 @@ for each and every function to inject the function's code as query string parame
 		$functionbaseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($functiongroup)/providers/Microsoft.Web/sites/$($functionsite)"
 		$client=$Endpoint.Auth.Parameters.ServicePrincipalId
 		$secret=[System.Web.HttpUtility]::UrlEncode($Endpoint.Auth.Parameters.ServicePrincipalKey)
-		$tenant=$Endpoint.Auth.Parameters.TenantId		
+		$tenant=$Endpoint.Auth.Parameters.TenantId
 		$body="resource=https%3A%2F%2Fmanagement.azure.com%2F"+
         "&client_id=$($client)"+
         "&grant_type=client_credentials"+

@@ -1,10 +1,10 @@
 {
-  "id": "fbb5ba7e-f837-4f46-b31e-f34c117fdd05",
+  "id": "8f446710-3c1f-48ed-8229-40705064cbff",
   "name": "apim",
-  "friendlyName": "API Management - Create or Update API",
-  "description": "API Management - Create or update API",
-  "author": "Stephane Eyskens",
-  "helpMarkDown": "API Management - Create/Update API",
+  "friendlyName": "Azure APIM - OpenAPI import, create or update",
+  "description": "Creates a new or updates an existing API in Azure API Management Service",
+  "author": "Alexander Viken (fork from Stephane Eyskens)",
+  "helpMarkDown": "Azure APIM OpenAPI import",
   "category": "Utility",
   "visibility": [
     "Release"
@@ -12,11 +12,11 @@
   "demands": [],
   "version": {
     "Major": "1",
-    "Minor": "0",
-    "Patch": "1"
+    "Minor": "2",
+    "Patch": "0"
   },
   "minimumAgentVersion": "1.95.0",
-  "instanceNameFormat": "API Management - Create/Update API $(message)",
+  "instanceNameFormat": "Azure APIM - Import/Update API $(message)",
   "inputs": [
     {
       "name": "ConnectedServiceNameARM",
@@ -76,7 +76,15 @@
       "required": true,
       "helpMarkDown": "New or existing API"
       
-    },    
+    },
+    {
+      "name": "targetpath",
+      "type": "string",
+      "label": "API Suffix",
+      "required": true,
+      "helpMarkDown": "URL suffix for API"
+      
+    },   
     {
       "name": "TemplateSelector",
       "type": "pickList",
