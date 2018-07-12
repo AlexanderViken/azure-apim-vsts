@@ -1,9 +1,9 @@
 {
-  "id": "1d7773b6-c5d2-4173-b687-5aadbae3d2ea",
+  "id": "71bc5783-e768-44fd-91fb-b6111d70988f",
   "name": "apimfunctionversioned",
-  "friendlyName": "API Management - Create or Update versioned API on Azure Functions",
+  "friendlyName": "Azure APIM - Create or Update versioned API on Azure Functions",
   "description": "API Management - Create or Update versioned API on Azure Functions",
-  "author": "Stephane Eyskens",
+  "author": "Alexander Viken (fork from Stephane Eyskens)",
   "helpMarkDown": "Create or Update versioned API on Azure Functions",
   "category": "Utility",
   "visibility": [
@@ -12,11 +12,11 @@
   "demands": [],
   "version": {
     "Major": "1",
-    "Minor": "0",
-    "Patch": "1"
+    "Minor": "2",
+    "Patch": "0"
   },
   "minimumAgentVersion": "1.95.0",
-  "instanceNameFormat": "API Management - Create/Update versioned API on Function $(message)",
+  "instanceNameFormat": "Azure APIM - Create/Update versioned API on Function $(message)",
   "inputs": [
     {
       "name": "ConnectedServiceNameARM",

@@ -10,8 +10,9 @@ shared VNET
 #>	
 	#getting inputs
 	    $arm=Get-VstsInput -Name ConnectedServiceNameARM
-		$Endpoint = Get-VstsEndpoint -Name $arm -Require	
+		$Endpoint = Get-VstsEndpoint -Name $arm -Require
 		$newapi=Get-VstsInput -Name targetapi
+		$newpath=Get-VstsImput -Name targetpath
 		$portal=Get-VstsInput -Name ApiPortalName
 		$rg=Get-VstsInput -Name ResourceGroupName 
 		$swaggerlocation=Get-VstsInput -Name swaggerlocation
@@ -85,7 +86,7 @@ shared VNET
 			"properties": {
 				"contentFormat": "swagger-link-json",
 				"contentValue": "'+$($SwaggerLocation)+'",
-				"path": "'+$($newapi)+'"
+				"path": "'+$($newpath)+'"
 			}
 		}'
 		write-host $json

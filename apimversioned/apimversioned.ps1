@@ -59,8 +59,7 @@ shared VNET
 		if($PolicyContent -ne $null -and $PolicyContent -ne "")
 		{
 			$PolicyContent = $PolicyContent.replace("`"","`'")
-		}		
-				
+		}
 		
 		$client=$Endpoint.Auth.Parameters.ServicePrincipalId
 		$secret=[System.Web.HttpUtility]::UrlEncode($Endpoint.Auth.Parameters.ServicePrincipalKey)

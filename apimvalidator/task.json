@@ -1,0 +1,35 @@
+{
+  "id": "84c196de-a95f-4f65-b4ed-b444e2d93221",
+  "name": "apimval",
+  "friendlyName": "Azure APIM - Validate API definition",
+  "description": "Validates the content and structure of a OpenAPI 3.x or swagger 2.x document",
+  "author": "Alexander Viken",
+  "helpMarkDown": "Azure APIM OpenAPI/Swagger validator",
+  "category": "Utility",
+  "visibility": [
+    "Release"
+  ],
+  "demands": [],
+  "version": {
+    "Major": "1",
+    "Minor": "2",
+    "Patch": "0"
+  },
+  "minimumAgentVersion": "1.95.0",
+  "instanceNameFormat": "Azure APIM - Validate Swagger/OpenAPI document $(message)",
+  "inputs": [
+    {
+      "name": "swaggerlocation",
+      "type": "string",
+      "label": "Swagger Location URL",
+      "required": true,
+      "helpMarkDown": "Make sure the URL is connectable from the build servers",
+      "defaultValue": ""
+    }
+    ],
+  "execution": {
+    "PowerShell3": {
+      "target": "apimvalidator.ps1"
+    }
+  }
+}

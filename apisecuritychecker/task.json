@@ -1,9 +1,9 @@
 {
-  "id": "2122de77-e114-41aa-973c-2daff243677a",
+  "id": "f32580d2-b261-48e7-aa5e-fbdacc33e06b",
   "name": "apisecuritychecker",
-  "friendlyName": "API Security Checker",
+  "friendlyName": "Azure APIM Security Checker",
   "description": "Makes sure all endpoints are secured",
-  "author": "Stephane Eyskens",
+  "author": "Alexander Viken (fork from Stephane Eyskens)",
   "helpMarkDown": "Makes sure all endpoints are secured",
   "category": "Utility",
   "visibility": [
@@ -12,11 +12,11 @@
   "demands": [],
   "version": {
     "Major": "1",
-    "Minor": "0",
-    "Patch": "1"
+    "Minor": "2",
+    "Patch": "0"
   },
   "minimumAgentVersion": "1.95.0",
-  "instanceNameFormat": "API Security Checker $(message)",
+  "instanceNameFormat": "Azure APIM Security Checker $(message)",
   "inputs": [
     {
       "name": "swaggerlocation",

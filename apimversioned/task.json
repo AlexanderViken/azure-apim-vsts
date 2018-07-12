@@ -1,10 +1,10 @@
 {
-  "id": "caee5262-b7ce-48c9-b5f7-70c586148ff8",
+  "id": "746295b0-e706-48d8-9cfb-4a6719d2001d",
   "name": "apimversioned",
-  "friendlyName": "API Management - Create or Update Versioned API",
-  "description": "API Management - Create or Update Versioned API",
-  "author": "Stephane Eyskens",
-  "helpMarkDown": "API Management - Create/Update API",
+  "friendlyName": "Azure APIM - OpenAPI import or update Versioned API",
+  "description": "Azure APIM - OpenAPI import orupdate Versioned API",
+  "author": "Alexander viken (fork from Stephane Eyskens)",
+  "helpMarkDown": "Azure APIM - Create/Update API",
   "category": "Utility",
   "visibility": [
     "Release"
@@ -12,11 +12,11 @@
   "demands": [],
   "version": {
     "Major": "1",
-    "Minor": "0",
-    "Patch": "1"
+    "Minor": "2",
+    "Patch": "0"
   },
   "minimumAgentVersion": "1.95.0",
-  "instanceNameFormat": "API Management - Create/Update API $(message)",
+  "instanceNameFormat": "Azure APIM - Create/Update API $(message)",
   "inputs": [
     {
       "name": "ConnectedServiceNameARM",
