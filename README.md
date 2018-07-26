@@ -9,6 +9,9 @@ is good to associate the release of your backends APIs with their corresponding 
 ships with an API Security Checker that helps validating that all endpoints of an API are well secured, this is of course only applicable to non-public APIs.
 This forked version intends to solve some gaps in the existing 
 # Release Notes
+## v1.2.4
+* Fixed typo in apim import script
+* Updated to azure rest api version 2018-06-01-preview
 ## v1.2.1
 * Forked version of https://github.com/stephaneey/azure-apim-extension
 * Renamed extention to avoid naming confusion
