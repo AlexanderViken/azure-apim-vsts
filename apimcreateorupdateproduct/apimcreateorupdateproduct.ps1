@@ -95,7 +95,8 @@ This task creates an APIM product.
 		}
 		Write-Host "Product is $($product)"
 		$baseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)"
-		$producturl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)/products/$($product)?api-version=2017-03-01"
+#		$producturl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)/products/$($product)?api-version=2017-03-01"
+		$producturl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)/products/$($product)?api-version=2018-06-01-preview"
 		Write-Host $producturl
 		if($displayName -eq $null -or $displayName -eq "")
 		{
