@@ -39,16 +39,16 @@ is also secured, make sure the VSTS agent can still connect to it (using a code 
             $method="put"
         }    
         if($swagger.paths.$($_.Name).delete -ne $null)
-        {            
+        {
             $parameters=$swagger.paths.$($_.Name).delete.parameters
             $method="delete"
-        }    
+        }
         if($swagger.paths.$($_.Name).merge -ne $null)
-        {            
+        {
             $parameters=$swagger.paths.$($_.Name).merge.parameters
             $method="merge"
-        }    
-            
+        }
+
         foreach($param in $parameters)
         {
             if($param.in -eq "query")
@@ -70,12 +70,11 @@ is also secured, make sure the VSTS agent can still connect to it (using a code 
             write-host -Message s "attempting to call $($PathToPing)$($QueryString) using method $($method)"
             if($PostBody -eq "")
             {
-               $resp=Invoke-WebRequest -UseBasicParsing -Uri "$($PathToPing)$($QueryString)" -Method "$($method)" -MaximumRedirection 0 -ErrorAction SilentlyContinue               
+               $resp=Invoke-WebRequest -UseBasicParsing -Uri "$($PathToPing)$($QueryString)" -Method "$($method)" -MaximumRedirection 0 -ErrorAction SilentlyContinue
             }
             else
             {
                $resp=Invoke-WebRequest -UseBasicParsing -Uri "$($PathToPing)$($QueryString)" -Method "$($method)" -Body "$($PostBody)" -MaximumRedirection 0 -ErrorAction SilentlyContinue
-               
             }
 			#that trick is only valid for Azure Active Directory kind of redirection.
             if($resp.StatusCode -eq 302 -and $resp.Headers.Location.StartsWith("https://login"))

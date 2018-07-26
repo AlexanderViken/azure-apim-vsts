@@ -123,7 +123,9 @@ for each and every function to inject the function's code as query string parame
 		}'
 		write-host $json
 		$baseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)"
-		$targeturl="$($baseurl)/apis/$($newapi)?api-version=2017-03-01"	
+		#$targeturl="$($baseurl)/apis/$($newapi)?api-version=2017-03-01"
+		$targeturl="$($baseurl)/apis/$($newapi)?api-version=2018-06-01-preview"
+
 		Write-Host "Creating or updating API $($targeturl)"
 	try
 		{
