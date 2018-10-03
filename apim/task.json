@@ -12,8 +12,8 @@
   "demands": [],
   "version": {
     "Major": "1",
-    "Minor": "4",
-    "Patch": "0"
+    "Minor": "5",
+    "Patch": "2"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "Azure APIM - Import/Update API $(message)",
@@ -42,6 +42,19 @@
       "helpMarkDown": "The API Portal you want to deploy against",
       "properties": {
         "EditableOptions": "false"
+      }
+    },
+    {
+      "name" : "protocols",
+      "type" : "pickList",
+      "label": "Protocols",
+      "required" : true,
+      "helpMarkDown" : "Choose HTTP, HTTPS, or Both as endpoint",
+      "defaultValue" : "[\"http\", \"https\"]",
+      "options": {
+        "HTTP" : "[\"http\"]",
+        "HTTPS" : "[\"https\"]",
+        "Both" : "[\"http\", \"https\"]"
       }
     },
     {
