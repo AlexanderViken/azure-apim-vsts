@@ -83,14 +83,30 @@ shared VNET
 		$headers = @{
 			Authorization = "Bearer $($resp.access_token)"        
 		}
-		$json = '{
-			"properties": {
-				"contentFormat": "swagger-link-json",
-				"contentValue": "'+$($SwaggerLocation)+'",
-				"path": "'+$($newapi)+'",
-				"protocols":'+$($protocols)'
-			}
-		}'
+
+		if ($protocols -match "http & https")
+		{
+			$json = '{
+				"properties": {
+					"contentFormat": "swagger-link-json",
+					"contentValue": "'+$($SwaggerLocation)+'",
+					"path": "'+$($newapi)+'",
+					"protocols":["http","https"]
+				}
+			}'
+	
+		}
+		else {
+			$json = '{
+				"properties": {
+					"contentFormat": "swagger-link-json",
+					"contentValue": "'+$($SwaggerLocation)+'",
+					"path": "'+$($newapi)+'",
+					"protocols":["'+$($protocols)+'"]
+				}
+			}'				
+		}
+
 		write-host $json
 		$baseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)"
 		#$targeturl="$($baseurl)/apis/$($newapi)?api-version=2017-03-01"

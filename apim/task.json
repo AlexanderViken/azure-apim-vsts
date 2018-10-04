@@ -13,7 +13,7 @@
   "version": {
     "Major": "1",
     "Minor": "5",
-    "Patch": "2"
+    "Patch": "5"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "Azure APIM - Import/Update API $(message)",
@@ -50,11 +50,11 @@
       "label": "Protocols",
       "required" : true,
       "helpMarkDown" : "Choose HTTP, HTTPS, or Both as endpoint",
-      "defaultValue" : "[\"http\", \"https\"]",
+      "defaultValue" : "http & https",
       "options": {
-        "HTTP" : "[\"http\"]",
-        "HTTPS" : "[\"https\"]",
-        "Both" : "[\"http\", \"https\"]"
+        "HTTP" : "http",
+        "HTTPS" : "https",
+        "Both" : "http & https"
       }
     },
     {
