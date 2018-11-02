@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "apiswag",
   "name": "APIM OpenAPI Import",
-  "version": "1.2.10",
+  "version": "1.2.16",
   "publisher": "MegaTherionLabs",
   "tags": [
     "API",

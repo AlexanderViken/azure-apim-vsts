@@ -83,29 +83,13 @@ shared VNET
 		$headers = @{
 			Authorization = "Bearer $($resp.access_token)"        
 		}
-
-		if ($protocols -match "http & https")
-		{
-			$json = '{
-				"properties": {
-					"contentFormat": "swagger-link-json",
-					"contentValue": "'+$($SwaggerLocation)+'",
-					"path": "'+$($newapi)+'",
-					"protocols":["http","https"]
-				}
-			}'
-	
-		}
-		else {
-			$json = '{
-				"properties": {
-					"contentFormat": "swagger-link-json",
-					"contentValue": "'+$($SwaggerLocation)+'",
-					"path": "'+$($newapi)+'",
-					"protocols":["'+$($protocols)+'"]
-				}
-			}'				
-		}
+		$json = '{
+			"properties": {
+				"contentFormat": "swagger-link-json",
+				"contentValue": "'+$($SwaggerLocation)+'",
+				"path": "'+$($newapi)+'"
+			}
+		}'
 
 		write-host $json
 		$baseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)"
@@ -172,6 +156,45 @@ shared VNET
 				throw
 			}
 		}
+#		https://management.azure.com/subscriptions/c84c870d-2541-4a67-b58f-229bf044c647/resourceGroups/Podium-Next-Development/providers/Microsoft.ApiManagement/service/podiumnextapi-dev/apis/podium-playlist-admin?api-version=2018-01-01
+#		https://management.azure.com/subscriptions/c84c870d-2541-4a67-b58f-229bf044c647/resourceGroups/Podium-Next-Development/providers/Microsoft.ApiManagement/service/podiumnextapi-dev/apis/podium-playlist-admin?api-version=2018-06-01-preview
+		if ($protocols -ne "http")
+		{
+			Write-Host "Update API to use https or both http and https"
+			Write-Host "Target URL: $($targeturl)"
+			if ($protocols -eq "https")
+			{
+				Write-Host "update api to use https only"
+				$protocoljson = '{
+					"properties": {
+						"protocols":["https"]
+					}
+				}'
+	
+			}
+			else
+			{
+				Write-Host "update api to use http and https"
+				$protocoljson = '{
+					"properties": {
+						"protocols":["http","https"]
+					}
+				}'
+			}
+
+			try
+			{
+				Invoke-WebRequest -UseBasicParsing -Uri $targeturl -Headers $headers -Body $protocoljson -Method Patch -ContentType "application/json"
+			}
+			catch [System.Net.WebException] 
+			{
+				$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
+				Write-Host $er.error.details
+				throw
+			}
+		}
+
+
 		Write-Host $rep
 
 } finally {
