@@ -1,27 +1,27 @@
 [CmdletBinding()]
 param()
 Trace-VstsEnteringInvocation $MyInvocation
-try {        
+try {
 
-<#  
+<#
 Warning: this code is provided as-is with no warranty of any kind. I do this during my free time.
-This task creates a versioned Gateway API against a backend API using the backend's swagger definition. 
+This task creates a versioned Gateway API against a backend API using the backend's swagger definition.
 Prerequisite to using this task: the API Gateway requires connectivity to the backend, so make sure these are either public, either part of a
 shared VNET
-#>	
+#>
 
-	    $arm=Get-VstsInput -Name ConnectedServiceNameARM
-		$Endpoint = Get-VstsEndpoint -Name $arm -Require	
-		$newapi=Get-VstsInput -Name targetapi
-		if($newapi.startswith("/subscriptions"))
+	    $ConnectedServiceNameARM=Get-VstsInput -Name ConnectedServiceNameARM
+		$Endpoint=Get-VstsEndpoint -Name $ConnectedServiceNameARM -Require
+		$TargetApi=Get-VstsInput -Name TargetApi
+		if($TargetApi.startswith("/subscriptions"))
 		{
-			$newapi=$newapi.substring($newapi.indexOf("/apis")+6)
+			$TargetApi=$TargetApi.substring($TargetApi.indexOf("/apis")+6)
 		}
-		$v=Get-VstsInput -Name version
-		$portal=Get-VstsInput -Name ApiPortalName
-		$rg=Get-VstsInput -Name ResourceGroupName 
-		$swaggerlocation=Get-VstsInput -Name swaggerlocation
-		$product=Get-VstsInput -Name product1 
+		$TargetApiVersion=Get-VstsInput -Name TargetApiVersion
+		$Portal=Get-VstsInput -Name ApiPortalName
+		$ResourceGroup=Get-VstsInput -Name ResourceGroupName
+		$SwaggerLocation=Get-VstsInput -Name SwaggerLocation
+		$Product=Get-VstsInput -Name Product
 		$UseProductCreatedByPreviousTask=Get-VstsInput -Name UseProductCreatedByPreviousTask
 		$SelectedTemplate=Get-VstsInput -Name TemplateSelector
 		if($SelectedTemplate -eq "CacheLookup")
@@ -60,205 +60,217 @@ shared VNET
 		{
 			$PolicyContent = $PolicyContent.replace("`"","`'")
 		}
-		
-		$client=$Endpoint.Auth.Parameters.ServicePrincipalId
-		$secret=[System.Web.HttpUtility]::UrlEncode($Endpoint.Auth.Parameters.ServicePrincipalKey)
-		$tenant=$Endpoint.Auth.Parameters.TenantId		
-		$body="resource=https%3A%2F%2Fmanagement.azure.com%2F"+
-        "&client_id=$($client)"+
+
+		$ClientId=$Endpoint.Auth.Parameters.ServicePrincipalId
+		$Secret=[System.Web.HttpUtility]::UrlEncode($Endpoint.Auth.Parameters.ServicePrincipalKey)
+		$TenantId=$Endpoint.Auth.Parameters.TenantId
+		$GetTokenBody="resource=https%3A%2F%2Fmanagement.azure.com%2F"+
+        "&client_id=$($ClientId)"+
         "&grant_type=client_credentials"+
-        "&client_secret=$($secret)"
+        "&client_secret=$($Secret)"
 	    try
 		{
-			$resp=Invoke-WebRequest -UseBasicParsing -Uri "https://login.windows.net/$($tenant)/oauth2/token" `
+			$resp=Invoke-WebRequest -UseBasicParsing -Uri "https://login.windows.net/$($TenantId)/oauth2/token" `
 				-Method POST `
-				-Body $body| ConvertFrom-Json    
-		
+				-Body $GetTokenBody|ConvertFrom-Json
+
 		}
-		catch [System.Net.WebException] 
+		catch [System.Net.WebException]
 		{
-			$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
-			write-host $er.error.details
+			$ExceptionMessage=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
+			Write-Output $ExceptionMessage.error.details
 			throw
 		}
-		
-		$headers = @{
-			Authorization = "Bearer $($resp.access_token)"        
+		$Headers = @{
+			Authorization = "Bearer $($resp.access_token)"
 		}
-		
-		write-host $json
-		$baseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)"
-		#$targeturl="$($baseurl)/apis/$($newapi)?api-version=2017-03-01"
-		$targeturl="$($baseurl)/apis/$($newapi)?api-version=2018-06-01-preview"
+
+		$BaseUrl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($ResourceGroup)/providers/Microsoft.ApiManagement/service/$($Portal)"
+		$TargetUrl="$($BaseUrl)/apis/$($TargetApi)?api-version=2018-06-01-preview"
 		#checking whether the API already exists or not. If not, a versionset must be created.
-		#NotFound
 		try
-		{			
-			Write-Host "checking whether $($targeturl) exists"
-			$cur=Invoke-WebRequest -UseBasicParsing -Uri $targeturl -Headers $headers|ConvertFrom-Json
-			$currentversion=$cur.properties.apiVersion
-			$apiexists=$true
-			Write-Host "found api"
+		{
+			Write-Output "checking whether $($TargetUrl) exists"
+			$ApiExistsResponse=Invoke-WebRequest -UseBasicParsing -Uri $TargetUrl -Headers $Headers|ConvertFrom-Json
+			$CurrentApiVersion=$ApiExistsResponse.properties.apiVersion
+			$ApiExists=$true
+			Write-Output "Found existing $($TargetApi)"
 		}
-		catch [System.Net.WebException] 
+		catch [System.Net.WebException]
 		{
 			if($_.Exception.Response.StatusCode -eq "NotFound")
             {
-				$apiexists=$false
+				$ApiExists=$false
 			}
             else
             {
 			    throw
             }
 		}
-		
+
 		try
 		{
 			#downloading swagger for later import
-			$cli=[System.Net.WebClient]::new()
-			$swagger=$cli.DownloadString($swaggerlocation)				
-			$cli.Dispose()
+			$HttpClient=[System.Net.WebClient]::new()
+			$SwaggerContent=$HttpClient.DownloadString($SwaggerLocation)
+			$HttpClient.Dispose()
 
-			if($apiexists -eq $false)
+			if($ApiExists -eq $false)
 			{
-				Write-Host "Creating new API from scratch"
+				Write-Output "Creating new API from scratch"
 				#creating the api version set, the api and importing the swagger definition into it
-				$version="$($newapi)versionset"
-				$versionseturl="$($baseurl)/api-version-sets/$($version)?api-version=2017-03-01"
-				$json='{"id":"/api-version-sets/'+$($version)+'","name":"'+$($newapi)+'","versioningScheme":"Segment"}'
-				Write-Host "Creating version set using $($versionseturl) using $($json)"
-				Invoke-WebRequest -UseBasicParsing -Uri $versionseturl  -Body $json -ContentType "application/json" -Headers $headers -Method Put
-				$apiurl="$($baseurl)/apis/$($newapi)?api-version=2017-03-01"
-				$json = '{
-				  "id":"/apis/'+$($newapi)+'",
-				  "name":"'+$($newapi)+'",
-				  "properties":
-				  { 
-					"displayName":"'+$($newapi)+'",
-					 "path":"'+$($newapi)+'",
-					 "protocols":["https"],
-					 "apiVersion":"v1",
-					 "apiVersionSet":{
-					   "id":"/api-version-sets/'+$($version)+'",
-					   "name":"'+$($newapi)+'",
-					   "versioningScheme":"Segment"
-					  },
-					  "apiVersionSetId":"/api-version-sets/'+$version+'"
-				  }
+				$VersionSetId="$($TargetApi)$($TargetApiVersion)"
+				$VersionSetUrl="$($BaseUrl)/api-version-sets/$($VersionSetId)?api-version=2017-03-01"
+				$CreateVersionSetBody='{
+					"id":"/api-version-sets/'+$($VersionSetId)+'",
+					"name":"'+$($TargetApi)+'",
+					"properties":{
+						"displayName": "'+$($TargetApi)+'",
+						"versioningScheme": "Query",
+						"versionQueryName": "version",
+						"isCurrent":true
+					}
 				}'
-				Write-Host "Creating API using $($apiurl) and $($json)"
-				Invoke-WebRequest -UseBasicParsing -Uri $apiurl  -Body $json -ContentType "application/json" -Headers $headers -Method Put
-				$headers.Add("If-Match","*")
-				$importurl="$($baseurl)/apis/$($newapi)?import=true&api-version=2017-03-01"
+				Write-Output "Creating version set using $($VersionSetUrl) using $($CreateVersionSetBody)"
+				$Headers.Add("If-Match","*")
+				Invoke-WebRequest -UseBasicParsing -Uri $VersionSetUrl  -Body $CreateVersionSetBody -ContentType "application/json" -Headers $Headers -Method Put
 				
-				Write-Host "Importing Swagger definition to API using $($importurl)"
-				Invoke-WebRequest -UseBasicParsing $importurl -Method Put -ContentType "application/vnd.swagger.doc+json" -Body $swagger -Headers $headers
+				$TargetApiUrl="$($BaseUrl)/apis/$($TargetApi)?api-version=2017-03-01"
+				$CreateApiBody = '{
+					"id":"/apis/'+$($TargetApi)+'",
+					"name":"'+$($TargetApi)+'",
+					"properties":
+					{
+						"displayName":"'+$($TargetApi)+'",
+						"path":"'+$($TargetApi)+'",
+						"protocols":["https"],
+						"apiVersion":"'+$($TargetApiVersion)+'",
+						"apiVersionSet":{
+							"id":"/api-version-sets/'+$($VersionSetId)+'",
+							"name":"'+$($TargetApi)+'",
+							"versionQueryName":"version",
+							"versioningScheme":"Query"
+						},
+						"apiVersionSetId":"/api-version-sets/'+$VersionSetId+'"
+				  	}
+				}'
+				Write-Output "Creating API using $($TargetApiUrl) and $($CreateApiBody)"
+				Invoke-WebRequest -UseBasicParsing -Uri $TargetApiUrl  -Body $CreateApiBody -ContentType "application/json" -Headers $Headers -Method Put
+				
+				$ImportSwaggerContent="$($BaseUrl)/apis/$($TargetApi)?import=true&api-version=2017-03-01"
+
+				Write-Output "Importing Swagger definition to API using $($ImportSwaggerContent)"
+				Invoke-WebRequest -UseBasicParsing $ImportSwaggerContent -Method Put -ContentType "application/vnd.swagger.doc+json" -Body $SwaggerContent -Headers $Headers
 			}
 			else
 			{
+				$ApiVersionExists=$false
 				#the api already exists, only a new version must be created.
-				$newversionurl="$($baseurl)/apis/$($newapi)$($v);rev=1?api-version=2017-03-01"
-				$headers = @{
-				 Authorization = "Bearer $($resp.access_token)"        
-				}				
-				$json='{"sourceApiId":"/apis/'+$($newapi)+'","apiVersionName":"'+$($v)+'","apiVersionSet":{"versioningScheme":"Segment"}}'
+				$ApiVersionUrl="$($BaseUrl)/apis/$($TargetApi)$($TargetApiVersion)?api-version=2018-06-01-preview"
 				try
-				{			
-					Invoke-WebRequest -UseBasicParsing -Uri $newversionurl -Headers $headers
-					$versionexists=$true
+				{
+					Invoke-WebRequest -UseBasicParsing -Uri $ApiVersionUrl -Headers $Headers -Method Head
+					$ApiVersionExists=$true
 				}
-				catch [System.Net.WebException] 
+				catch [System.Net.WebException]
 				{
 					if($_.Exception.Response.StatusCode -eq "NotFound")
 					{
-						$versionexists=$false
+						Write-Output "Version not found at $($ApiVersionUrl))"
+						$ApiVersionExists=$false
 					}
 					else
 					{
 						throw
 					}
 				}
-				Write-Host "current version $($currentversion), version is $($v), version exists $($versionexists)"
-				if($currentversion -ne $v -and $versionexists -eq $false)
-				{
-					Write-Host "Creating a new version $($newversionurl) with $($json)"
-					Invoke-WebRequest -UseBasicParsing $newversionurl -Method Put -ContentType "application/vnd.ms-azure-apim.revisioninfo+json" -Body $json -Headers $headers
-					$importurl="$($baseurl)/apis/$($newapi)$($v)?import=true&api-version=2017-03-01"
-				}		
-				else
-				{
-					$importurl="$($baseurl)/apis/$($newapi)?import=true&api-version=2017-03-01"
-				}
-				$headers.Add("If-Match","*")		
-				#reapplying swagger
+				Write-Output "Current version $($CurrentApiVersion), version is $($TargetApiVersion), version exists $($ApiVersionExists)"
 				
-				Write-Host "Importing swagger $($importurl)"
-				Invoke-WebRequest -UseBasicParsing $importurl -Method Put -ContentType "application/vnd.swagger.doc+json" -Body $swagger -Headers $headers
+				$ApiVersionBody='{
+					"sourceApiId":"/apis/'+$($TargetApi)+'",
+					"apiVersionName":"'+$($TargetApiVersion)+'",
+					"apiVersionSet":{
+						"versioningScheme": "Query",
+						"versionQueryName": "version",
+						"isCurrent":true
+					}
+				}'
+				if($CurrentApiVersion -ne $TargetApiVersion -and $ApiVersionExists -eq $false)
+				{
+					$NewApiVersionUrl="$($BaseUrl)/apis/$($TargetApi)$($TargetApiVersion);rev=1?api-version=2018-06-01-preview"
+					Write-Output "Creating a new version $($NewApiVersionUrl) with $($ApiVersionBody)"
+					Invoke-WebRequest -UseBasicParsing $NewApiVersionUrl -Method Put -ContentType "application/vnd.ms-azure-apim.revisioninfo+json" -Body $ApiVersionBody -Headers $Headers
+				}
+					
+				$ImportSwaggerContent="$($BaseUrl)/apis/$($TargetApi)$($TargetApiVersion)?import=true&api-version=2018-06-01-preview"
+				$Headers.Add("If-Match","*")
+				Write-Output "Importing swagger $($ImportSwaggerContent)"
+				Invoke-WebRequest -UseBasicParsing $ImportSwaggerContent -Method Put -ContentType "application/vnd.swagger.doc+json" -Body $SwaggerContent -Headers $Headers
 			}
-			
+
 		}
-		catch [System.Net.WebException] 
+		catch [System.Net.WebException]
 		{
-			$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
-			Write-Host $er.error.details
+			$ExceptionMessage=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
+			Write-Output $ExceptionMessage.error.details
 			throw
 		}
-		
+
 		if($UseProductCreatedByPreviousTask -eq $true)
 		{
-			$product = $env:NewUpdatedProduct
-			if($product -eq $null -or $product -eq "")
+			$Product = $env:NewUpdatedProduct
+			if($Product -eq $null -or $Product -eq "")
 			{
 				throw "There was no product created by a previous task"
 			}
 		}
-		if($newversionurl -eq $null -or $newversionurl -eq "" -or ($currentversion -eq $v))
+		if($NewApiVersionUrl -eq $null -or $NewApiVersionUrl -eq "" -or ($CurrentApiVersion -eq $TargetApiVersion))
 		{
-			$apimv="$($newapi)"
+			$apimv="$($TargetApi)"
 		}
 		else
 		{
-			$apimv="$($newapi)$($v)"
+			$apimv="$($TargetApi)$($TargetApiVersion)"
 		}
-		if($product -ne $null -and $product -ne "")
+		if($Product -ne $null -and $Product -ne "")
 		{
-			$productapiurl=	"$($baseurl)/products/$($product)/apis/$($apimv)?api-version=2017-03-01"
-			
+			$ProductApiUrl=	"$($BaseUrl)/products/$($Product)/apis/$($apimv)?api-version=2017-03-01"
+
 			try
 			{
-				Write-Host "Linking API to product $($productapiurl)"
-				Invoke-WebRequest -UseBasicParsing -Uri $productapiurl -Headers $headers -Method Put 
+				Write-Output "Linking API to product $($ProductApiUrl)"
+				Invoke-WebRequest -UseBasicParsing -Uri $ProductApiUrl -Headers $Headers -Method Put
 			}
-			catch [System.Net.WebException] 
+			catch [System.Net.WebException]
 			{
-				$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
-				Write-Host $er.error.details
+				$ExceptionMessage=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
+				Write-Output $ExceptionMessage.error.details
 				throw
 			}
-			
+
 		}
 		if($PolicyContent -ne $null -and $PolicyContent -ne "")
 		{
 			try
 			{
-				$policyapiurl=	"$($baseurl)/apis/$($apimv)/policies/policy?api-version=2017-03-01"
+				$policyapiurl=	"$($BaseUrl)/apis/$($apimv)/policies/policy?api-version=2017-03-01"
 				$JsonPolicies = "{
-				  `"properties`": {					
+				  `"properties`": {
 					`"policyContent`":`""+$PolicyContent+"`"
 					}
 				}"
-				Write-Host "Linking policy to API USING $($policyapiurl)"
-				Write-Host $JsonPolicies
-				Invoke-WebRequest -UseBasicParsing -Uri $policyapiurl -Headers $headers -Method Put -Body $JsonPolicies -ContentType "application/json"
+				Write-Output "Linking policy to API USING $($policyapiurl)"
+				Write-Output $JsonPolicies
+				Invoke-WebRequest -UseBasicParsing -Uri $policyapiurl -Headers $Headers -Method Put -Body $JsonPolicies -ContentType "application/json"
 			}
-			catch [System.Net.WebException] 
+			catch [System.Net.WebException]
 			{
-				$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
-				Write-Host $er.error.details
+				$ExceptionMessage=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
+				Write-Output $ExceptionMessage.error.details
 				throw
 			}
 		}
-		Write-Host $rep
+		Write-Output $rep
 
 } finally {
     Trace-VstsLeavingInvocation $MyInvocation
