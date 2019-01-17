@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "apiswag",
   "name": "APIM OpenAPI Import",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "publisher": "MegaTherionLabs",
   "tags": [
     "API",
@@ -31,7 +31,7 @@
   ],
   "description": "Release tasks for adding API to Azure API Management Service",
   "categories": [
-    "Build and release"
+    "Azure Pipelines"
   ],
   "icons": {
     "default": "images/extension-icon.png"

@@ -2,7 +2,7 @@
   "id": "746295b0-e706-48d8-9cfb-4a6719d2001d",
   "name": "apimversioned",
   "friendlyName": "Azure APIM - OpenAPI import or update Versioned API",
-  "description": "Azure APIM - OpenAPI import orupdate Versioned API",
+  "description": "Azure APIM - OpenAPI import or update Versioned API",
   "author": "Alexander viken (fork from Stephane Eyskens)",
   "helpMarkDown": "Azure APIM - Create/Update API",
   "category": "Utility",
@@ -13,7 +13,7 @@
   "version": {
     "Major": "1",
     "Minor": "3",
-    "Patch": "0"
+    "Patch": "1"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "Azure APIM - Create/Update API $(message)",
@@ -51,7 +51,7 @@
       "helpMarkDown": "Make sure the task that creates/updates the product is not disabled and that it is executed by the same agent."
     },
     {
-      "name": "product1",
+      "name": "Product",
       "type": "pickList",
       "label": "Product",
       "required": false,
@@ -62,7 +62,7 @@
       "visibleRule": "UseProductCreatedByPreviousTask=false"
     },
     {
-      "name": "swaggerlocation",
+      "name": "SwaggerLocation",
       "type": "string",
       "label": "Swagger Location URL",
       "required": true,
@@ -70,14 +70,14 @@
       "defaultValue": ""
     },
     {
-      "name": "targetapi",
+      "name": "TargetApi",
       "type": "string",
       "label": "API Name",
       "required": true,
       "helpMarkDown": "New or existing API"
     },
     {
-      "name": "version",
+      "name": "TargetApiVersion",
       "type": "string",
       "label": "API Version",
       "required": true,
@@ -201,7 +201,7 @@
       }
     },
     {
-      "target": "product1",
+      "target": "Product",
       "endpointId": "$(ConnectedServiceNameARM)",
       "endpointUrl": "{{endpoint.url}}/subscriptions/{{endpoint.subscriptionId}}/resourceGroups/$(ResourceGroupName)/providers/Microsoft.ApiManagement/service/$(ApiPortalName)/products?api-version=2017-03-01",
       "resultSelector": "jsonpath:$.value[*]",
