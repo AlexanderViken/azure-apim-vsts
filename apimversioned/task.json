@@ -13,7 +13,7 @@
   "version": {
     "Major": "1",
     "Minor": "3",
-    "Patch": "1"
+    "Patch": "2"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "Azure APIM - Create/Update API $(message)",
@@ -62,6 +62,16 @@
       "visibleRule": "UseProductCreatedByPreviousTask=false"
     },
     {
+      "name": "ApiVersionSetName",
+      "type": "pickList",
+      "label": "API Name",
+      "required": true,
+      "helpMarkDown": "The API you want to create a new version for.",
+      "properties": {
+        "EditableOptions": "false"
+      }
+    },
+    {
       "name": "SwaggerLocation",
       "type": "string",
       "label": "Swagger Location URL",
@@ -72,7 +82,7 @@
     {
       "name": "TargetApi",
       "type": "string",
-      "label": "API Name",
+      "label": "API suffix Name",
       "required": true,
       "helpMarkDown": "New or existing API"
     },
@@ -206,8 +216,18 @@
       "endpointUrl": "{{endpoint.url}}/subscriptions/{{endpoint.subscriptionId}}/resourceGroups/$(ResourceGroupName)/providers/Microsoft.ApiManagement/service/$(ApiPortalName)/products?api-version=2017-03-01",
       "resultSelector": "jsonpath:$.value[*]",
       "resultTemplate": "{\"Value\" : \"{{{name}}}\", \"DisplayValue\" : \"{{{properties.displayName}}}\" }"
-    }
-    
+    },
+    {
+      "name": "ApiVersionSets",
+      "target": "ApiVersionSetName",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}/subscriptions/{{endpoint.subscriptionId}}/resourceGroups/$(ResourceGroupName)/providers/Microsoft.ApiManagement/service/$(ApiPortalName)/api-version-sets?api-version=2018-01-01",
+      "resultSelector": "jsonpath:$.value[*].name",
+      "parameters": {
+        "ResourceGroupName": "$(ResourceGroupName)",
+        "ApiPortalName" : "$(ApiPortalName)"
+      }
+    }    
   ],
   "execution": {
     "PowerShell3": {

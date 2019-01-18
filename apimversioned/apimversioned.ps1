@@ -20,6 +20,7 @@ shared VNET
 		$TargetApiVersion=Get-VstsInput -Name TargetApiVersion
 		$Portal=Get-VstsInput -Name ApiPortalName
 		$ResourceGroup=Get-VstsInput -Name ResourceGroupName
+		$ApiVersionSet = Get-VstsInput -Name ApiVersionSetName
 		$SwaggerLocation=Get-VstsInput -Name SwaggerLocation
 		$Product=Get-VstsInput -Name Product
 		$UseProductCreatedByPreviousTask=Get-VstsInput -Name UseProductCreatedByPreviousTask
