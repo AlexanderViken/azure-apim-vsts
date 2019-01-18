@@ -1,0 +1,84 @@
+{
+    "id": "746295b0-e706-48d8-9cfb-4a6719d2001d",
+    "name": "apimversionset",
+    "friendlyName": "Azure APIM  - Create API Version Set",
+    "description": "Azure APIM - Creates a new Api Version Set in the APIM",
+    "author": "Alexander viken",
+    "helpMarkDown": "Azure APIM - Create/Update  API version set",
+    "category": "Utility",
+    "visibility": [
+      "Release"
+    ],
+    "demands": [],
+    "version": {
+      "Major": "1",
+      "Minor": "0",
+      "Patch": "0"
+    },
+    "minimumAgentVersion": "1.95.0",
+    "instanceNameFormat": "Azure APIM - Create/Update Api Version Set $(message)",
+    "inputs": [
+      {
+        "name": "ConnectedServiceNameARM",
+        "type": "connectedService:AzureRM",
+        "label": "Azure Subscription",
+        "defaultValue": "",
+        "required": true,
+        "helpMarkDown": "Azure Resource Manager subscription to configure before running PowerShell"
+  
+      },
+      {
+        "name": "ResourceGroupName",
+        "label": "Resource Group",
+        "type": "pickList",
+        "required": true,
+        "helpMarkDown": "Select resource group which contains the API portal"
+      },
+      {
+        "name": "ApiPortalName",
+        "type": "pickList",
+        "label": "API Portal",
+        "required": true,
+        "helpMarkDown": "The API Portal you want to deploy against",
+        "properties": {
+          "EditableOptions": "false"
+        }
+      },
+      {
+        "name": "ApiVersionSetName",
+        "type": "string",
+        "label": "Api Version Set Name",
+        "required": true,
+        "helpMarkDown": "New or existing Api Version Set"
+      },
+      {
+        "name": "ApiVersionSetDescription",
+        "type": "string",
+        "label": "Api Version Set Description",
+        "required": true,
+        "helpMarkDown": "Description of the version set"
+      }
+    ],
+    "dataSourceBindings": [
+      {
+        "target": "ResourceGroupName",
+        "endpointId": "$(ConnectedServiceNameARM)",
+        "dataSourceName": "AzureResourceGroups"
+      },
+      {
+        "name": "ApiPortals",
+        "target": "ApiPortalName",
+        "endpointId": "$(ConnectedServiceNameARM)",
+        "endpointUrl": "{{endpoint.url}}/subscriptions/$(endpoint.subscriptionId)/resourceGroups/$(ResourceGroupName)/providers/Microsoft.ApiManagement/service?api-version=2016-07-07",
+        "resultSelector": "jsonpath:$.value[*].name",
+        "parameters": {
+          "ResourceGroupName": "$(ResourceGroupName)"
+        }
+      }
+    ],
+    "execution": {
+      "PowerShell3": {
+        "target": "apimversionset.ps1"
+      }
+    }
+  }
