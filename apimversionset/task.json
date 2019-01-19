@@ -1,5 +1,5 @@
 {
-    "id": "746295b0-e706-48d8-9cfb-4a6719d2001d",
+    "id": "67bf7760-7c12-4960-acd7-3d3252044e2f",
     "name": "apimversionset",
     "friendlyName": "Azure APIM  - Create API Version Set",
     "description": "Azure APIM - Creates a new Api Version Set in the APIM",
@@ -13,7 +13,7 @@
     "version": {
       "Major": "1",
       "Minor": "0",
-      "Patch": "0"
+      "Patch": "2"
     },
     "minimumAgentVersion": "1.95.0",
     "instanceNameFormat": "Azure APIM - Create/Update Api Version Set $(message)",
@@ -51,6 +51,14 @@
         "required": true,
         "helpMarkDown": "New or existing Api Version Set"
       },
+      {
+        "name": "ApiVersionSetDisplayName",
+        "type": "string",
+        "label": "Api Version Set Display Name",
+        "required": true,
+        "helpMarkDown": "New or existing Api Version Set"
+      },
+
       {
         "name": "ApiVersionSetDescription",
         "type": "string",

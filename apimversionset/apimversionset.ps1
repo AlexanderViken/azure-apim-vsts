@@ -10,6 +10,7 @@ try {
     $SwaggerLocation=Get-VstsInput -Name SwaggerLocation
     $ApiVersionSetName = Get-VstsInput -Name ApiVersionSetName
     $ApiVersionSetDescription = Get-VstsInput -Name ApiVersionSetDescription
+    $ApiVersionSetDisplayName = Get-VstsInput -Name ApiVersionSetDisplayName
 
     $ClientId=$Endpoint.Auth.Parameters.ServicePrincipalId
     $Secret=[System.Web.HttpUtility]::UrlEncode($Endpoint.Auth.Parameters.ServicePrincipalKey)
@@ -40,13 +41,13 @@ try {
     # setting base url for all apim calls to azure
     $BaseUrl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($ResourceGroup)/providers/Microsoft.ApiManagement/service/$($Portal)"
 
-    $TargetUrl="$($BaseUrl)/api-version-sets/$($ApiVersionSetName)?api-version=2018-01-01"
+    $VersionSetUrl="$($BaseUrl)/api-version-sets/$($ApiVersionSetName)?api-version=2018-01-01"
 
     #checking if target api-version-set already exists
     try {
         Write-Output "checking whether $($ApiVersionSetName) exists"
-        $ApiExistsResponse=Invoke-WebRequest -UseBasicParsing -Uri $TargetUrl -Headers $Headers | ConvertFrom-Json
-        $CurrentApiVersion=$ApiExistsResponse.properties.apiVersion
+        $ApiExistsResponse=Invoke-WebRequest -UseBasicParsing -Uri $VersionSetUrl -Headers $Headers | ConvertFrom-Json
+        $CurrentApiVersionSetId=$ApiExistsResponse.id
         $ApiExists=$True
     }
     catch
@@ -64,11 +65,35 @@ try {
     if ($ApiExists -eq $True)
     {
         Write-Host "The api-version-set already exists"
+        #Set env variable so it can be fetched in next step(s)
+        Write-Host ("##vso[task.setvariable variable=NewVersionSetId;]$CurrentApiVersionSetId")
     }
     else
     {
         Write-Host "Need to create a new API Version Set"
+        $postBody = '{
+            "name": "' + $ApiVersionSetName + '",
+            "properties": {
+              "displayName": "' + $ApiVersionSetDisplayName + '",
+              "description": "' + $ApiVersionSetDescription + '",
+              "versioningScheme": "Query",
+              "versionQueryName": "version",
+              "versionHeaderName": null
+            }
+          }'
+          try {
+            $createResponse = Invoke-WebRequest -UseBasicParsing -Uri $VersionSetUrl -Headers $headers -Method Put -Body $postBody -ContentType "application/json" | ConvertFrom-Json
+            $CurrentApiVersionSetId=$createResponse.id
+
+            #Set env variable so it can be fetched in next step(s)
+            Write-Host ("##vso[task.setvariable variable=NewVersionSetId;]$CurrentApiVersionSetId")
+
+          }
+          catch {
+                Write-Host $_.Exception.Response.StatusCode
+          }
     }
-
-
+}
+finally {
+    Trace-VstsLeavingInvocation $MyInvocation
 }
