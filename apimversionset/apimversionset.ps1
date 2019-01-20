@@ -67,6 +67,8 @@ try {
         Write-Host "The api-version-set already exists"
         #Set env variable so it can be fetched in next step(s)
         Write-Host ("##vso[task.setvariable variable=NewVersionSetId;]$CurrentApiVersionSetId")
+        Write-Host ("##vso[task.setvariable variable=NewVersionUrlPrefix;]$ApiVersionSetName")
+
     }
     else
     {
@@ -87,7 +89,7 @@ try {
 
             #Set env variable so it can be fetched in next step(s)
             Write-Host ("##vso[task.setvariable variable=NewVersionSetId;]$CurrentApiVersionSetId")
-
+            Write-Host ("##vso[task.setvariable variable=NewVersionUrlPrefix;]$ApiVersionSetName")
           }
           catch {
                 Write-Host $_.Exception.Response.StatusCode

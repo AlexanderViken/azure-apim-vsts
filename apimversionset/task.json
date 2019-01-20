@@ -13,7 +13,7 @@
     "version": {
       "Major": "1",
       "Minor": "0",
-      "Patch": "2"
+      "Patch": "5"
     },
     "minimumAgentVersion": "1.95.0",
     "instanceNameFormat": "Azure APIM - Create/Update Api Version Set $(message)",
@@ -47,22 +47,22 @@
       {
         "name": "ApiVersionSetName",
         "type": "string",
-        "label": "Api Version Set Name",
+        "label": "Api PATH prefix",
         "required": true,
-        "helpMarkDown": "New or existing Api Version Set"
+        "helpMarkDown": "The path after the hostname this API should use, without spaces as valid url characters"
       },
       {
         "name": "ApiVersionSetDisplayName",
         "type": "string",
-        "label": "Api Version Set Display Name",
+        "label": "Api Display Name in developer portal",
         "required": true,
-        "helpMarkDown": "New or existing Api Version Set"
+        "helpMarkDown": "The friendly name for the API displayed in the developer portal"
       },
 
       {
         "name": "ApiVersionSetDescription",
         "type": "string",
-        "label": "Api Version Set Description",
+        "label": "Api Description",
         "required": true,
         "helpMarkDown": "Description of the version set"
       }

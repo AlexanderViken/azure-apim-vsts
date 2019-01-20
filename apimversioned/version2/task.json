@@ -1,10 +1,10 @@
 {
   "id": "746295b0-e706-48d8-9cfb-4a6719d2001d",
   "name": "apimversioned",
-  "friendlyName": "Azure APIM - OpenAPI import or update Versioned API",
-  "description": "Azure APIM - OpenAPI import or update Versioned API",
+  "friendlyName": "Azure APIM - OpenAPI add import or update version for Api Version Set",
+  "description": "Imports a new OpenApi definition as new version to Api Version Set, or updates an existing version. (Requires a previous Version Set release step)",
   "author": "Alexander Viken",
-  "helpMarkDown": "Azure APIM - Create/Update Versioned API",
+  "helpMarkDown": "Azure APIM - import or update version to version set",
   "category": "Utility",
   "visibility": [
     "Release"
@@ -13,10 +13,10 @@
   "version": {
     "Major": "2",
     "Minor": "0",
-    "Patch": "17"
+    "Patch": "25"
   },
   "minimumAgentVersion": "1.95.0",
-  "instanceNameFormat": "Azure APIM - Create/Update API $(message)",
+  "instanceNameFormat": "Azure APIM - import or update to version set $(message)",
   "inputs": [
     {
       "name": "ConnectedServiceNameARM",
@@ -45,12 +45,6 @@
       }
     },
     {
-      "name": "UseProductCreatedByPreviousTask",
-      "type": "boolean",
-      "label": "Product created by previous task",
-      "helpMarkDown": "Make sure the task that creates/updates the product is not disabled and that it is executed by the same agent."
-    },
-    {
       "name": "Product",
       "type": "pickList",
       "label": "Product",
@@ -58,26 +52,7 @@
       "helpMarkDown": "Product you want to add the API to.",
       "properties": {
         "EditableOptions": "False"
-      },
-      "visibleRule": "UseProductCreatedByPreviousTask=false"
-    },
-    {
-      "name": "UseVersionSetCreatedByPrevoiusTask",
-      "type": "boolean",
-      "label": "Api Version Set created by previous task",
-      "helpMarkDown": "Make sure the task that creates/updates the version set is not disabled and that it is executed by the same agent."
-    },
-
-    {
-      "name": "ApiVersionSetName",
-      "type": "pickList",
-      "label": "API Version Set",
-      "required": false,
-      "helpMarkDown": "The API you want to create a new version for.",
-      "properties": {
-        "EditableOptions": "false"
-      },
-      "visibleRule": "UseVersionSetCreatedByPrevoiusTask=false"
+      }
     },
     {
       "name": "ApiVersionName",
@@ -86,14 +61,6 @@
       "required": true,
       "helpMarkDown": "New or existing api version"
     },
-    {
-      "name": "ApiPath",
-      "type": "string",
-      "label": "Path suffix for API",
-      "required": true,
-      "helpMarkDown": "New or existing api version"
-    },
-
     {
       "name": "SwaggerLocation",
       "type": "string",
