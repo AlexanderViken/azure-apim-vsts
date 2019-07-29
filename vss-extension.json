@@ -31,7 +31,7 @@
   ],
   "description": "Release tasks for adding API to Azure API Management Service",
   "categories": [
-    "Build and release"
+    "Azure Pipelines"
   ],
   "icons": {
     "default": "images/extension-icon.png"
