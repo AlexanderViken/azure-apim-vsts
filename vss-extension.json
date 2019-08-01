@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "apiswag",
   "name": "APIM OpenAPI Import",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "publisher": "MegaTherionLabs",
   "tags": [
     "API",
@@ -31,7 +31,7 @@
   ],
   "description": "Release tasks for adding API to Azure API Management Service",
   "categories": [
-    "Build and release"
+    "Azure Pipelines"
   ],
   "icons": {
     "default": "images/extension-icon.png"
@@ -51,6 +51,9 @@
     },
     {
       "path": "apimfunctionversioned"
+    },
+    {
+      "path": "apimfunctionv2versioned"
     },
     {
       "path": "apisecuritychecker"
@@ -133,6 +136,16 @@
       ],
       "properties": {
         "name": "apimfunctionversioned"
+      }
+    },
+    {
+      "id": "apimfunctionv2versioned",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "apimfunctionv2versioned"
       }
     }
   ]
