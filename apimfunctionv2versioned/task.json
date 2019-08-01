@@ -1,0 +1,135 @@
+{
+  "id": "18c01056-205b-4b3a-868e-a1a1a335cf84",
+  "name": "apimfunctionv2versioned",
+  "friendlyName": "Azure APIM - Create or Update versioned API on Azure Functions v2",
+  "description": "API Management - Create or Update versioned API on Azure Functions v2",
+  "author": "Alexander Viken (fork from Stephane Eyskens)",
+  "helpMarkDown": "Create or Update versioned API on Azure Functions v2",
+  "category": "Utility",
+  "visibility": [
+    "Release"
+  ],
+  "demands": [],
+  "version": {
+    "Major": "1",
+    "Minor": "0",
+    "Patch": "0"
+  },
+  "minimumAgentVersion": "1.95.0",
+  "instanceNameFormat": "Azure APIM - Create/Update versioned API on Function $(message)",
+  "inputs": [
+    {
+      "name": "ConnectedServiceNameARM",
+      "type": "connectedService:AzureRM",
+      "label": "Azure Subscription",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "Azure Resource Manager subscription to configure before running PowerShell"
+
+    },
+    {
+      "name": "APIResourceGroupName",
+      "label": "API Resource Group",
+      "type": "pickList",
+      "required": true,
+      "helpMarkDown": "Select resource group which contains the API portal"
+    },
+    {
+      "name": "ApiPortalName",
+      "type": "pickList",
+      "label": "API Portal",
+      "required": true,
+      "helpMarkDown": "The API Portal you want to deploy against",
+      "properties": {
+        "EditableOptions": "false"
+      }
+    },
+    {
+      "name": "product1",
+      "type": "pickList",
+      "label": "API Product",
+      "required": false,
+      "helpMarkDown": "Product you want to add the API to.",
+      "properties": {
+        "EditableOptions": "False"
+      },
+      "visibleRule": "UseProductCreatedByPreviousTask=false"
+    },
+    {
+      "name": "targetapi",
+      "type": "string",
+      "label": "API Name",
+      "required": true,
+      "helpMarkDown": "New or existing API"
+    },
+    {
+      "name": "version",
+      "type": "string",
+      "label": "API Version",
+      "required": true,
+      "helpMarkDown": "API version",
+      "defaultValue": "v1"
+    },
+    {
+      "name": "ResourceGroupName",
+      "label": "Functions Resource Group",
+      "type": "pickList",
+      "required": true,
+      "helpMarkDown": "Select resource group which contains the Azure Functions"
+    },
+    {
+      "name": "HostingWebSite",
+      "type": "pickList",
+      "label": "Functions Site",
+      "required": true,
+      "helpMarkDown": "Web site where your functions are deployed",
+      "properties": {
+        "EditableOptions": "true"
+      }
+    }
+
+  ],
+
+  "dataSourceBindings": [
+    {
+      "target": "APIResourceGroupName",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "dataSourceName": "AzureResourceGroups"
+    },
+    {
+      "target": "ResourceGroupName",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "dataSourceName": "AzureResourceGroups"
+    },
+    {
+      "name": "ApiPortals",
+      "target": "ApiPortalName",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}/subscriptions/$(endpoint.subscriptionId)/resourceGroups/$(APIResourceGroupName)/providers/Microsoft.ApiManagement/service?api-version=2016-07-07",
+      "resultSelector": "jsonpath:$.value[*].name",
+      "parameters": {
+        "ResourceGroupName": "$(APIResourceGroupName)"
+      }
+    },
+    {
+      "target": "product1",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}/subscriptions/{{endpoint.subscriptionId}}/resourceGroups/$(APIResourceGroupName)/providers/Microsoft.ApiManagement/service/$(ApiPortalName)/products?api-version=2017-03-01",
+      "resultSelector": "jsonpath:$.value[*]",
+      "resultTemplate": "{\"Value\" : \"{{{name}}}\", \"DisplayValue\" : \"{{{properties.displayName}}}\" }"
+    },
+    {
+      "target": "HostingWebSite",
+      "endpointId": "$(ConnectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}/subscriptions/{{endpoint.subscriptionId}}/resourceGroups/$(ResourceGroupName)/providers/Microsoft.Web/sites?api-version=2016-08-01",
+      "resultSelector": "jsonpath:$.value[*]",
+      "resultTemplate": "{{{name}}}"
+    }
+    
+  ],
+  "execution": {
+    "PowerShell3": {
+      "target": "apimfunctionv2versioned.ps1"
+    }
+  }
+}

@@ -53,6 +53,9 @@
       "path": "apimfunctionversioned"
     },
     {
+      "path": "apimfunctionv2versioned"
+    },
+    {
       "path": "apisecuritychecker"
     },
     {
@@ -133,6 +136,16 @@
       ],
       "properties": {
         "name": "apimfunctionversioned"
+      }
+    },
+    {
+      "id": "apimfunctionv2versioned",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "apimfunctionv2versioned"
       }
     }
   ]
