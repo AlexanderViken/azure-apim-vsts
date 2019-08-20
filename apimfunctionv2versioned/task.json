@@ -52,8 +52,7 @@
       "helpMarkDown": "Product you want to add the API to.",
       "properties": {
         "EditableOptions": "False"
-      },
-      "visibleRule": "UseProductCreatedByPreviousTask=false"
+      }
     },
     {
       "name": "targetapi",
