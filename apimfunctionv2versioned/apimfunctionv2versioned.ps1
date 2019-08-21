@@ -1,5 +1,20 @@
 [CmdletBinding()]
 param()
+
+function LogException
+{
+	param ([System.Net.WebException]$e)
+
+	Write-Host "Aggregating exception"
+	$msg = $e.Message
+	while ($e.InnerException) {
+		  $e = $e.InnerException
+		  $msg += "`n" + $e.Message
+	}
+
+	Write-Host $msg
+}
+
 Trace-VstsEnteringInvocation $MyInvocation
 try 
 {        
@@ -74,7 +89,16 @@ try
 		$Headers.Add("If-Match","*")
 		$versionseturl="$($baseurl)/apiVersionSets/$($versionSet)?api-version=2019-01-01"
 		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($versionSet)+'","versioningScheme": "Segment"}}'
-		Invoke-WebRequest -UseBasicParsing -Uri $versionseturl -Body $body -ContentType "application/json" -Headers $headers -Method Put
+
+		try 
+		{
+			Invoke-WebRequest -UseBasicParsing -Uri $versionseturl -Body $body -ContentType "application/json" -Headers $headers -Method Put
+		}
+		catch [System.Net.WebException] 
+		{
+			LogException($_.Exception)
+			throw
+		}
 
 		$apiurl="$($baseurl)/apis/$($finalApi)?api-version=2019-01-01"
 		$body='{
@@ -93,8 +117,16 @@ try
 					}
 				}
 			}'
-		Write-Host "Creating API using $($finalApi)"
-		Invoke-WebRequest -UseBasicParsing -Uri $apiurl  -Body $body -ContentType "application/json" -Headers $headers -Method Put
+		Write-Host "Creating API using $($finalApi)"		
+		try 
+		{
+			Invoke-WebRequest -UseBasicParsing -Uri $apiurl  -Body $body -ContentType "application/json" -Headers $headers -Method Put
+		}
+		catch [System.Net.WebException] 
+		{
+			LogException($_.Exception)
+			throw
+		}
 	}
 	else {
 		$ApiVersionExists=$false
@@ -112,6 +144,7 @@ try
 			}
 			else
 			{
+				LogException($_.Exception)
 				throw
 			}
 		}
@@ -131,7 +164,15 @@ try
 			$finalApi="$($functionsite)$($v)"
 			$NewApiVersionUrl="$($BaseUrl)/apis/$($finalApi)$;rev=1?api-version=2019-01-01"
 			Write-Output "Creating a new version $($NewApiVersionUrl) with $($ApiVersionBody)"
-			Invoke-WebRequest -UseBasicParsing $NewApiVersionUrl -Method Put -ContentType "application/vnd.ms-azure-apim.revisioninfo+json" -Body $ApiVersionBody -Headers $Headers
+			try 
+			{
+				Invoke-WebRequest -UseBasicParsing $NewApiVersionUrl -Method Put -ContentType "application/vnd.ms-azure-apim.revisioninfo+json" -Body $ApiVersionBody -Headers $Headers
+			}
+			catch [System.Net.WebException] 
+			{
+				LogException($_.Exception)
+				throw
+			}
 		}
 	}
 	
@@ -143,16 +184,32 @@ try
     }]
 	}'
 	Write-Host "Linking product: $($product) with API with $($finalApi)"
-	Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
+	try 
+	{
+		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 
 	$functionsurl="$($functionbaseurl)/functions?api-version=2016-08-01"
-	$functionsresp=Invoke-WebRequest -UseBasicParsing -Uri $functionsurl -Headers $headers
-
-	$listkeysurl="$($functionbaseurl)/host/default/listkeys?api-version=2016-08-01"
-	$listkeysresp=Invoke-WebRequest -UseBasicParsing -Uri $listkeysurl -Headers $headers -Method Post
+	$functionsresp=""
+	try
+	{
+		$functionsresp=Invoke-WebRequest -UseBasicParsing -Uri $functionsurl -Headers $headers
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 
 	$newkeyname="apim-$($portal)-function-$($functionsite)"
 	try {
+		$listkeysurl="$($functionbaseurl)/host/default/listkeys?api-version=2016-08-01"
+		$listkeysresp=Invoke-WebRequest -UseBasicParsing -Uri $listkeysurl -Headers $headers -Method Post
 		$newkey=$listkeysresp | ConvertFrom-Json | Select-Object  -ExpandProperty "$($newkeyname)"
 	}
 	catch {
@@ -164,7 +221,15 @@ try
 		  "value": "'+$($newkey)+'"
 		}
 	  }'
-	Invoke-WebRequest -UseBasicParsing -Uri $newkeyurl -Body $body -ContentType "application/json" -Headers $headers -Method Put
+	try
+	{
+		Invoke-WebRequest -UseBasicParsing -Uri $newkeyurl -Body $body -ContentType "application/json" -Headers $headers -Method Put
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 	
 	$putkeysurl="$($baseurl)/properties/$($newkeyname)?api-version=2019-01-01"
 	$body='{
@@ -182,7 +247,15 @@ try
 		}
 	}'
 	Write-Host "Creating functions key using $($putkeysurl)"
-	Invoke-WebRequest -UseBasicParsing -Uri $putkeysurl -Body $body -ContentType "application/json" -Headers $headers -Method Put
+	try
+	{
+		Invoke-WebRequest -UseBasicParsing -Uri $putkeysurl -Body $body -ContentType "application/json" -Headers $headers -Method Put
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 	
 	$body='{
 	  "requests": [
@@ -215,7 +288,15 @@ try
 	}'
 	Write-Host "Creating backend for $($finalApi)"
 	$batchrequesturl="https://management.azure.com/batch?api-version=2016-07-01"
-	Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
+	try
+	{
+		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 
 	$operations=@()
 	$operationNames=@()
@@ -263,7 +344,15 @@ try
 	}"
 	$batchrequesturl="https://management.azure.com/batch?api-version=2016-07-01"
 	Write-Host "Creating API signature based on azure functions"
-	Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post		
+	try
+	{
+		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post		
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 
 	$body='{
 		"requests": ['
@@ -293,7 +382,15 @@ try
 }'
 	$batchrequesturl="https://management.azure.com/batch?api-version=2016-07-01"
 	Write-Host "Adding base policy"
-	Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
+	try
+	{
+		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
+	}
+	catch [System.Net.WebException] 
+	{
+		LogException($_.Exception)
+		throw
+	}
 
 }
 finally
