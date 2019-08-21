@@ -91,7 +91,7 @@ try
 		Write-Host "Creating new API version set from scratch"
 		$Headers.Add("If-Match","*")
 		$versionseturl="$($baseurl)/apiVersionSets/$($versionSet)?api-version=2019-01-01"
-		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($versionSet)+'","versioningScheme": "Segmentabc"}}'
+		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($versionSet)+'","versioningScheme": "Segment"}}'
 		Write-Host $body
 		try 
 		{
