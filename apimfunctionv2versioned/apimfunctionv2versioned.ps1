@@ -3,16 +3,19 @@ param()
 
 function LogException
 {
-	param ([System.Net.WebException]$e)
+	param ([System.Exception] $e)
 
-	Write-Host "Aggregating exception"
-	$msg = $e.Message
-	while ($e.InnerException) {
-		  $e = $e.InnerException
-		  $msg += "`n" + $e.Message
-	}
+	$exception = $e
+	Write-Host "Convert exception to json: " 
+	Write-Host $($exception | ConvertTo-Json)
+	
+	# $msg = $exception.Message
+	# while ($exception.InnerException) {
+	# 	  $exception = $exception.InnerException
+	# 	  $msg += "`n" + $exception.Message
+	# }
 
-	Write-Host $msg
+	# Write-Host "Exception messages: " $msg
 }
 
 Trace-VstsEnteringInvocation $MyInvocation
@@ -51,7 +54,7 @@ try
 			-Method POST `
 			-Body $body| ConvertFrom-Json    
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
 		write-host $er.error.details
@@ -89,7 +92,7 @@ try
 		$Headers.Add("If-Match","*")
 		$versionseturl="$($baseurl)/apiVersionSets/$($versionSet)?api-version=2019-01-01"
 		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($versionSet)+'","versioningScheme": "Segment"}}'
-
+		Write-Host $body
 		try 
 		{
 			Invoke-WebRequest -UseBasicParsing -Uri $versionseturl -Body $body -ContentType "application/json" -Headers $headers -Method Put
@@ -117,12 +120,12 @@ try
 					}
 				}
 			}'
-		Write-Host "Creating API using $($finalApi)"		
+		Write-Host "Creating API using $($finalApi) with body: $($body)"		
 		try 
 		{
 			Invoke-WebRequest -UseBasicParsing -Uri $apiurl  -Body $body -ContentType "application/json" -Headers $headers -Method Put
 		}
-		catch [System.Net.WebException] 
+		catch [System.Exception] 
 		{
 			LogException($_.Exception)
 			throw
@@ -168,7 +171,7 @@ try
 			{
 				Invoke-WebRequest -UseBasicParsing $NewApiVersionUrl -Method Put -ContentType "application/vnd.ms-azure-apim.revisioninfo+json" -Body $ApiVersionBody -Headers $Headers
 			}
-			catch [System.Net.WebException] 
+			catch [System.Exception] 
 			{
 				LogException($_.Exception)
 				throw
@@ -188,7 +191,7 @@ try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
@@ -200,7 +203,7 @@ try
 	{
 		$functionsresp=Invoke-WebRequest -UseBasicParsing -Uri $functionsurl -Headers $headers
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
@@ -225,7 +228,7 @@ try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $newkeyurl -Body $body -ContentType "application/json" -Headers $headers -Method Put
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
@@ -251,7 +254,7 @@ try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $putkeysurl -Body $body -ContentType "application/json" -Headers $headers -Method Put
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
@@ -292,7 +295,7 @@ try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
@@ -348,7 +351,7 @@ try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post		
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
@@ -386,7 +389,7 @@ try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post
 	}
-	catch [System.Net.WebException] 
+	catch [System.Exception] 
 	{
 		LogException($_.Exception)
 		throw
