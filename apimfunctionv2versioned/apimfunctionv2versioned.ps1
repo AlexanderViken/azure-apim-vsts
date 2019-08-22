@@ -5,17 +5,14 @@ function LogException
 {
 	param ([System.Exception] $e)
 
-	$exception = $e
-	Write-Host "Convert exception to json: " 
-	Write-Host $($exception | ConvertTo-Json)
-	
-	# $msg = $exception.Message
-	# while ($exception.InnerException) {
-	# 	  $exception = $exception.InnerException
-	# 	  $msg += "`n" + $exception.Message
-	# }
+	$exception = $e	
+	$msg = $exception.Message
+	while ($exception.InnerException) {
+		  $exception = $exception.InnerException
+		  $msg += "`n" + $exception.Message
+	}
 
-	# Write-Host "Exception messages: " $msg
+	Write-Host "Exception messages: " $msg
 }
 
 Trace-VstsEnteringInvocation $MyInvocation
@@ -67,7 +64,7 @@ try
 	
 	$baseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($rg)/providers/Microsoft.ApiManagement/service/$($portal)"
 	$functionbaseurl="$($Endpoint.Url)subscriptions/$($Endpoint.Data.SubscriptionId)/resourceGroups/$($functiongroup)/providers/Microsoft.Web/sites/$($functionsite)"
-	$versionSet="$($newapisuffix)"
+	$versionSet=$newapisuffix -replace " ", "-"
 	$finalApi=$functionsite
 
 	$apiurl="$($baseurl)/apis/$($functionsite)?api-version=2019-01-01"
@@ -91,7 +88,7 @@ try
 		Write-Host "Creating new API version set from scratch"
 		$Headers.Add("If-Match","*")
 		$versionseturl="$($baseurl)/apiVersionSets/$($versionSet)?api-version=2019-01-01"
-		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($versionSet)+'","versioningScheme": "Segment"}}'
+		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($newapisuffix)+'","versioningScheme": "Segment"}}'
 		Write-Host $body
 		try 
 		{
@@ -111,11 +108,11 @@ try
 					"displayName": "'+$($functionsite)+'",
 					"protocols": [ "https" ],
 					"description": "Import from \"'+$($functionsite)+'\" Function App",
-					"path": "'+$($newapisuffix)+'",
+					"path": "'+$($versionSet)+'",
 					"apiVersion": "'+$($v)+'",
 					"apiVersionSetId": "/apiVersionSets/'+$($versionSet)+'",
 					"apiVersionSet": {
-						"name": "'+$($versionSet)+'",
+						"name": "'+$($newapisuffix)+'",
 						"versioningScheme": "Segment"
 					}
 				}
@@ -159,7 +156,7 @@ try
 				"sourceApiId":"/apis/'+$($functionsite)+'",
 				"apiVersionName":"'+$($v)+'",
 				"apiVersionSet":{
-					"name": "'+$($versionSet)+'",
+					"name": "'+$($newapisuffix)+'",
 					"versioningScheme": "Segment",
 					"isCurrent":true
 				}
