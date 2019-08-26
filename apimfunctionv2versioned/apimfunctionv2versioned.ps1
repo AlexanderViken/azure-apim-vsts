@@ -320,7 +320,7 @@ try
 					    "properties": {
 						    "displayName": "'+$functionName+'",
 						    "description": "",
-							"urlTemplate": "/'+$functionName+'",
+							"urlTemplate": "/'+$httpTriggers.route+'",
 							"method": "'+$httpMethod+'",
 							"templateParameters": [],
 							"responses": []
@@ -343,7 +343,7 @@ try
 	$body="$($body)$($operations[$operations.Length-1])]
 	}"
 	$batchrequesturl="https://management.azure.com/batch?api-version=2016-07-01"
-	Write-Host "Creating API signature based on azure functions"
+	Write-Host "Creating API signature based on azure functions with body: " $body
 	try
 	{
 		Invoke-WebRequest -UseBasicParsing -Uri $batchrequesturl -Body $body -ContentType "application/json" -Headers $headers -Method Post		
