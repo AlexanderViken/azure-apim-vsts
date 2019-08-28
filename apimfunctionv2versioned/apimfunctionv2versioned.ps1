@@ -88,7 +88,7 @@ try
 		Write-Host "Creating new API version set from scratch"
 		$Headers.Add("If-Match","*")
 		$versionseturl="$($baseurl)/apiVersionSets/$($versionSet)?api-version=2019-01-01"
-		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($newapisuffix)+'","versioningScheme": "Segment"}}'
+		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($newapisuffix)+'","versioningScheme": "Header","versionHeaderName": "version"}}'
 		Write-Host $body
 		try 
 		{
@@ -158,7 +158,7 @@ try
 				"apiVersionName":"'+$($v)+'",
 				"apiVersionSet":{
 					"name": "'+$($newapisuffix)+'",
-					"versioningScheme": "Segment",
+					"versioningScheme": "Header",
 					"isCurrent":true
 				}
 			}'
@@ -268,7 +268,7 @@ try
 			"name": "'+$functionsite+'",
 			"properties": {
 			  "description": "'+$functionsite+'",
-			  "url": "https://'+$functionsite+'.azurewebsites.net/api",
+			  "url": "https://'+$functionsite+'.azurewebsites.net",
 			  "protocol": "http",
 			  "resourceId": "'+$functionbaseurl+'",
 			  "credentials": {
@@ -307,7 +307,8 @@ try
 		$httpTriggers=$function.properties.config.bindings | Where-Object { $_.type -eq "httpTrigger" }
 		if($httpTriggers)
 		{
-			$route=$function.properties.invoke_url_template -replace "https://$($functionsite).azurewebsites.net/api", ""
+			$route=$function.properties.invoke_url_template -replace "https://$($functionsite).azurewebsites.net/", ""
+			$route=$route -replace "^api/", ""
 			$templateParameters="["
 			$regmatches=[regex]::Matches($route, '{\w+}')
 			foreach($match in $regmatches.value)
@@ -354,7 +355,7 @@ try
 					    "properties": {
 						    "displayName": "'+$functionName+'",
 						    "description": "",
-							"urlTemplate": "'+$route+'",
+							"urlTemplate": "/'+$route+'",
 							"method": "'+$httpMethod+'",
 							"templateParameters": '+$templateParameters+',
 							"responses": []
