@@ -113,7 +113,8 @@ try
 					"apiVersionSetId": "/apiVersionSets/'+$($versionSet)+'",
 					"apiVersionSet": {
 						"name": "'+$($newapisuffix)+'",
-						"versioningScheme": "Segment"
+						"versioningScheme": "Header",
+						"versionHeaderName": "version"
 					}
 				}
 			}'
@@ -306,11 +307,44 @@ try
 		$httpTriggers=$function.properties.config.bindings | Where-Object { $_.type -eq "httpTrigger" }
 		if($httpTriggers)
 		{
+			$route=$function.properties.invoke_url_template -replace "https://$($functionsite).azurewebsites.net/api", ""
+			$templateParameters="["
+			$regmatches=[regex]::Matches($route, '{\w+}')
+			foreach($match in $regmatches.value)
+			{
+    			$parameter=$match.Substring(1,$match.Length-2)
+				$templateParameters+='
+				{
+	  				"name": "'+$parameter+'",
+	  				"type": "",
+	  				"values": [],
+	  				"required": true
+				},'			
+			}
+			$regmatches=[regex]::Matches($route, '{\w+\?}')
+			foreach($match in $regmatches.value)
+			{
+				$parameter=$match.Substring(1,$match.Length-3)
+				$templateParameters+='
+				{
+	  				"name": "'+$parameter+'",
+	  				"type": "",
+	  				"values": [],
+	  				"required": false
+				},'
+			}
+			if($templateParameters -match ",$")
+			{
+				$templateParameters=$templateParameters.Substring(0,$templateParameters.Length-1)
+			}
+			$templateParameters+="]"
+			$route=$route -replace "\?", ""
 			foreach($httpMethod in $httpTriggers.methods)
 			{
 				$functionName=$function.properties.name
 				$operation=$httpMethod+'-'+$functionName
 				$operationNames += $operation
+				
 				$operationjson='{
 					"httpMethod": "PUT",								   
 					"relativeUrl": "/subscriptions/'+$Endpoint.Data.SubscriptionId+'/resourceGroups/'+$rg+'/providers/Microsoft.ApiManagement/service/'+$portal+'/apis/'+$finalApi+'/operations/'+$operation+'?api-version=2019-01-01",
@@ -320,9 +354,9 @@ try
 					    "properties": {
 						    "displayName": "'+$functionName+'",
 						    "description": "",
-							"urlTemplate": "/'+$httpTriggers.route+'",
+							"urlTemplate": "'+$route+'",
 							"method": "'+$httpMethod+'",
-							"templateParameters": [],
+							"templateParameters": '+$templateParameters+',
 							"responses": []
 					    }
 					}
