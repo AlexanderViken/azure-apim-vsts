@@ -88,7 +88,7 @@ try
 		Write-Host "Creating new API version set from scratch"
 		$Headers.Add("If-Match","*")
 		$versionseturl="$($baseurl)/apiVersionSets/$($versionSet)?api-version=2019-01-01"
-		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($newapisuffix)+'","versioningScheme": "Header","versionHeaderName": "version"}}'
+		$body='{"id": "/apiVersionSets/'+$($versionSet)+'","properties": {"displayName": "'+$($newapisuffix)+'","versioningScheme": "Query","versionQueryName": "version"}}'
 		Write-Host $body
 		try 
 		{
@@ -113,8 +113,8 @@ try
 					"apiVersionSetId": "/apiVersionSets/'+$($versionSet)+'",
 					"apiVersionSet": {
 						"name": "'+$($newapisuffix)+'",
-						"versioningScheme": "Header",
-						"versionHeaderName": "version"
+						"versioningScheme": "Query",
+						"versionQueryName": "version"
 					}
 				}
 			}'
@@ -158,7 +158,7 @@ try
 				"apiVersionName":"'+$($v)+'",
 				"apiVersionSet":{
 					"name": "'+$($newapisuffix)+'",
-					"versioningScheme": "Header",
+					"versioningScheme": "Query",
 					"isCurrent":true
 				}
 			}'
