@@ -164,7 +164,7 @@ for each and every function to inject the function's code as query string parame
 			catch [System.Net.WebException] 
 			{
 				$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
-				Write-Hosts $er.error.details
+				Write-Host $er.error.details
 				throw
 			}
 			
