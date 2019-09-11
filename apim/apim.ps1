@@ -129,7 +129,7 @@ shared VNET
 			catch [System.Net.WebException] 
 			{
 				$er=$_.ErrorDetails.Message.ToString()|ConvertFrom-Json
-				Write-Hosts $er.error.details
+				Write-Host $er.error.details
 				throw
 			}
 			
